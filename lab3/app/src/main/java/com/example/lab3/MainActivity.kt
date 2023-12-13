@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -24,6 +27,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -37,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.lab3.ui.theme.Lab3Theme
 
 class MainActivity : ComponentActivity() {
@@ -54,7 +60,19 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ShoppingCartApp(){
-    var data = remember { mutableStateListOf<String>()}
+    var data = remember { mutableStateListOf<String>() }
+    var isShowDialog = remember {
+        mutableStateOf(false)
+    }
+    if(isShowDialog.value){
+        InputDialog(
+            onCancel = { isShowDialog.value = false },
+            onAddButtonClick = { newItemName ->
+                data.add(newItemName)
+                isShowDialog.value = false
+            }
+        )
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -66,7 +84,7 @@ fun ShoppingCartApp(){
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { data.add("Item Name") },
+                onClick = { isShowDialog.value = true },
                 containerColor = Color.Magenta) {
                 Icon(Icons.Filled.Add,
                     "Add new Items",
@@ -81,7 +99,34 @@ fun ShoppingCartApp(){
         }
     }
 }
-
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InputDialog(
+    onCancel: () -> Unit,
+    onAddButtonClick: (String) -> Unit
+){
+    Dialog(
+        onDismissRequest = onCancel,
+    ){
+        var textValue by remember {
+            mutableStateOf("")
+        }
+        Card(
+            shape = RoundedCornerShape(8.dp)){
+            Column(
+                modifier = Modifier.padding(10.dp),
+            ) {
+                TextField(
+                    value = textValue,
+                    onValueChange = { textValue = it },
+                    label = { Text("Itemname") })
+                TextButton(onClick = { onAddButtonClick(textValue) }) {
+                    Text("Add")
+                }
+            }
+        }
+    }
+}
 @Composable
 private fun CartItem(itemname:String) {
     var amount : Int by remember { mutableStateOf(0) }
@@ -97,12 +142,9 @@ private fun CartItem(itemname:String) {
                 .weight(1f)
                 .padding(start = 10.dp)
         )
-        IconButton(onClick = {
-            if (amount > 0) {
-                amount--
-            }
-        }) {
-            Icon(Icons.Filled.ArrowBack, "Decrease")
+        IconButton(onClick = { amount-- }) {
+            Icon(Icons.Filled.ArrowBack,
+                "Decrease")
         }
         Text(
             "$amount",
@@ -116,6 +158,6 @@ private fun CartItem(itemname:String) {
 
 @Preview(showBackground = true)
 @Composable
-fun ShoppingCartPreview() {
-    ShoppingCartApp()
+fun Preview() {
+    InputDialog(onCancel = {}, onAddButtonClick = {})
 }
