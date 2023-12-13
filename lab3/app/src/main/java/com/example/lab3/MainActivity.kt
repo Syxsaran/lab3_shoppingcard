@@ -142,9 +142,12 @@ private fun CartItem(itemname:String) {
                 .weight(1f)
                 .padding(start = 10.dp)
         )
-        IconButton(onClick = { amount-- }) {
-            Icon(Icons.Filled.ArrowBack,
-                "Decrease")
+        IconButton(onClick = {
+            if (amount > 0) {
+                amount--
+            }
+        }) {
+            Icon(Icons.Filled.ArrowBack, "Decrease")
         }
         Text(
             "$amount",
